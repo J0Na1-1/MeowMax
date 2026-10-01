@@ -2416,7 +2416,6 @@ export function PremiumProbePage({
             />
           )}
           <h1>{pageTitle}</h1>
-          <span className='premium-probe-pro'>PRO</span>
           {HEADER_LICENSE_BADGES.length > 0 ? (
             <span className='premium-probe-license'>
               <LicenseNameplate
@@ -2438,40 +2437,45 @@ export function PremiumProbePage({
           )}
         </div>
         <nav>
-          <span className='premium-probe-live'>实时更新</span>
-          <div className='premium-probe-view-toggle'>
+          <div className='premium-probe-topbar-row-top'>
+            <span className='premium-probe-live'>实时更新</span>
+            <div className='premium-probe-view-toggle'>
+              <button
+                type='button'
+                className={view === 'card' ? 'is-active' : undefined}
+                onClick={() => changeView('card')}
+              >
+                <Globe2 /> 地图视图
+              </button>
+              <button
+                type='button'
+                className={view === 'network' ? 'is-active' : undefined}
+                onClick={() => changeView('network')}
+              >
+                <Activity /> 网络状况
+              </button>
+              <button
+                type='button'
+                className={view === 'resource' ? 'is-active' : undefined}
+                onClick={() => changeView('resource')}
+              >
+                <Gauge /> 资源概况
+              </button>
+            </div>
+          </div>
+          <div className='premium-probe-topbar-row-bottom'>
+            <span className='premium-probe-pro'>PRO</span>
             <button
               type='button'
-              className={view === 'card' ? 'is-active' : undefined}
-              onClick={() => changeView('card')}
+              className={`premium-probe-login premium-probe-watermark-toggle${showWatermark ? ' is-on' : ''}`}
+              aria-label={showWatermark ? '隐藏水印层' : '显示水印层'}
+              aria-pressed={showWatermark}
+              title={showWatermark ? '隐藏水印层（纯黑背景）' : '显示水印层'}
+              onClick={toggleWatermark}
             >
-              <Globe2 /> 地图视图
-            </button>
-            <button
-              type='button'
-              className={view === 'network' ? 'is-active' : undefined}
-              onClick={() => changeView('network')}
-            >
-              <Activity /> 网络状况
-            </button>
-            <button
-              type='button'
-              className={view === 'resource' ? 'is-active' : undefined}
-              onClick={() => changeView('resource')}
-            >
-              <Gauge /> 资源概况
+              <Layers />
             </button>
           </div>
-          <button
-            type='button'
-            className={`premium-probe-login premium-probe-watermark-toggle${showWatermark ? ' is-on' : ''}`}
-            aria-label={showWatermark ? '隐藏水印层' : '显示水印层'}
-            aria-pressed={showWatermark}
-            title={showWatermark ? '隐藏水印层（纯黑背景）' : '显示水印层'}
-            onClick={toggleWatermark}
-          >
-            <Layers />
-          </button>
           <button
             type='button'
             className={`premium-probe-login premium-probe-platinum-toggle${colorMode === 'dark' || (colorMode === 'auto' && !autoPlatinum) ? '' : ' is-on'}`}
