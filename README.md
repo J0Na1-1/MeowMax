@@ -4,6 +4,64 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/chnnic/jiwo-probe)
 
+## 部署方式
+
+外置探针将静态页面、只读 API 代理和 WebSocket 代理部署到同一个 Cloudflare Worker。访客只访问探针域名，主控访问密钥由 Worker Secret 保管，不会暴露在浏览器中。
+
+## 部署前准备
+
+1. 主控必须具有可由 Cloudflare 访问的公网 HTTPS 地址。
+2. 在主控的"系统设置 → 探针"中启用外置探针，并选择需要展示的服务器与指标。
+3. 开启"保护探针数据接口"，生成并立即保存独立探针访问密钥。密钥明文只显示一次，切勿提交到 Git。
+4. 准备一个 Cloudflare 账户，并授权其访问你的 GitHub 账户。
+
+先进入主控的"系统设置 → 探针"，启用探针、选择展示服务器和指标，然后生成"独立探针访问密钥"。密钥明文只显示一次，请立即保存，切勿提交到 Git。
+
+## 1. 打开一键部署页面
+
+打开 MMWX Probe 仓库，点击 Deploy to Cloudflare。Cloudflare 会引导你连接 GitHub，并创建一个用于持续部署的专用仓库。
+
+[Deploy to Cloudflare](https://deploy.workers.cloudflare.com/?url=https://github.com/chnnic/jiwo-probe)
+
+> **推荐先 fork 再导入**：先在 GitHub 上把 `chnnic/jiwo-probe` fork 到自己的账号，然后按下面的步骤导入**自己的 fork**。这样自带 `sync-upstream.yml` 自动同步工作流，上游更新无需手动合并（详见下文"自动同步上游更新"）。
+> ⚠️ **不要用页面上的 "Deploy with Workers" 一键部署按钮**（`deploy.workers.cloudflare.com`）：它会在你的 GitHub 生成一个**复制仓库**，且复制时跳过隐藏目录 `.github/`，导致自动同步工作流丢失，之后无法跟随上游更新。请使用 Dashboard 的 **Import a repository** 直接连接你的 fork。
+
+## 2. 配置 Cloudflare 项目
+
+选择 Git 账户并保持"创建专用 Git 存储库"开启。项目名称可使用 `mmwx-probe-xxxx`；确认构建命令为 `npm run build`、部署命令为 `npm run deploy`，并保持生产分支自动构建。
+
+| 必须填写的变量 | 说明 |
+| --- | --- |
+| `MMWX_ORIGIN` | 妙妙屋 X 主控的公网 HTTPS 地址，例如 `https://panel.example.com`。不要填写路径，也不要保留末尾斜杠。 |
+| `PROBE_TOKEN` | 主控"系统设置 → 探针"生成的独立探针访问密钥。请作为 Secret 保存，禁止写入源码或公开仓库。 |
+
+## 3. 验证并绑定域名
+
+1. 等待首次构建完成，打开 Cloudflare 提供的 workers.dev 地址。
+2. 确认服务器列表、趋势图和实时更新均能正常加载。
+3. 如需自定义域名，在 Worker 的 **Settings → Domains & Routes** 中添加域名。DNS、TLS 和 WebSocket 均由 Cloudflare 处理，无需修改前端代码。
+4. 更新主控地址或轮换密钥后，请同步修改 Worker Variables and Secrets 并重新部署。
+
+连接 GitHub 后，每次推送到 `main` 分支都会由 Workers Builds 自动构建和部署。
+
+## 4. 启用 fork 自动更新
+
+部署仓库是 MMWX Probe 的 fork。首次启用自动更新前，先确认 fork 已包含最新的 Sync upstream 工作流；之后它会每天北京时间 11:23 合并上游更新，推送成功后 Cloudflare 会自动重新构建。
+
+1. 打开自己 GitHub 账户下的 mmwx-probe 仓库。如果页面提示分支落后，点击 **Sync fork → Update branch**。不要点击 Discard commits，否则会丢弃 fork 中已有的自定义提交。
+2. 进入 Actions 页面。如果 GitHub 提示 fork 工作流尚未启用，点击 *I understand my workflows, go ahead and enable them*。
+3. 在左侧选择 **Sync upstream**，然后点击 **Run workflow**，可立即执行一次同步。页面出现绿色成功标记即表示更新已推送。
+4. 进入 **Settings → Actions → General**，在 Workflow permissions 中选择 *Read and write permissions* 并保存，确保工作流可以把更新推回 main 分支。
+
+fork 自带 `sync-upstream.yml` 工作流（纯 shell git 实现，零 action 依赖）：
+
+- **自动**：每天北京时间 11:23 自动合并 `chnnic/jiwo-probe` 的 `main` 到你的 fork 并推送，推送触发 CF 自动构建部署。
+- **手动**：fork 仓库 → **Actions → Sync upstream → Run workflow**（秒级同步）；或 GitHub 网页 **Sync fork → Update branch** 按钮。
+- **前提**（公共 fork 需检查一次）：
+  - **Actions 已启用**：fork 仓库 → Settings → Actions → General → 勾选 *Allow all actions and reusable workflows*（公共 fork 默认禁用定时任务）。
+  - **Workflow permissions = Read and write**：同上页面，*Workflow permissions* 选 *Read and write permissions*，否则工作流推送会被拒绝。
+  - 不要修改与上游冲突的文件；若有本地改动冲突，同步工作流会停止并列出冲突文件，需手动处理。
+
 与原版的差异（定制增强）：
 
 ### 视图模式（三套，一键切换）
@@ -27,7 +85,7 @@
   - NodeDetail 详情页、Traffic 全网流量、Billing 订阅汇总（月成本 / 年估算 / 到期提醒 / 多币种 + 汇率）、访客信息浮卡（每会话一次）
   - **10 个主题变体**：墨石深（night）/ 雾色浅（mist）/ 烬枣红（ember）/ 樱粉（sakura）/ 薰衣草（lavender）等，右上角切换
   - 懒加载分包（首屏 index 196KB 不变），访客接口走 CF 请求头（零第三方依赖）
-- **Lumina 主题**（第 5 主题，`pixel → flat → anime → glass → lumina → ran` 循环）——复刻 Komari Theme LuminaPlus 卡片：浅色阶分层 + 描边（无阴影），健康区延迟/丢包柱条热力分段（与数值同色）、流量脉冲点击弹日流量趋势图、延迟/丢包柱条点击弹完整趋势图、延迟展示内容可选（平均或任意线路）、上下行箭头图标化（悬停 title 提示）、**三网回程勋章扁平化**（去掉系统金/银拟物动画勋章，改细边框低饱和 chip，CN2 GIA / 9929 / CMIN2 等优质线路金色点缀，详情页同步同款）
+- **Lumina 主题**（第 5 主题，`pixel → flat → anime → glass → lumina → ran` 循环）——复刻 Komari Theme LuminaPlus 卡片：浅色阶分层 + 描边（无阴影），健康区延迟/丢包柱条热力分段（与数值同色）、流量脉冲点击弹日流量趋势图、延迟/丢包率柱条点击弹完整趋势图、延迟展示内容可选（平均或任意线路）、上下行箭头图标化（悬停 title 提示）、**三网回程勋章扁平化**（去掉系统金/银拟物动画勋章，改细边框低饱和 chip，CN2 GIA / 9929 / CMIN2 等优质线路金色点缀，详情页同步同款）
   - **四态配色循环**（Gem 图标切换：浅 → 暗 → 黑金 → 白金）——黑金为 Lumina 专属配色：深墨绿黑底 + 金色描边/光晕 + 米白文字，顶部金色光晕；白金移植自 license.miaomiaowu.net premium light（米白底 + 暗金 #a87c22）；切换记忆在浏览器（localStorage），刷新保持
   - **黑金/白金金色体系**——非语义色收敛金色：进度条/脉冲条/剩余流量条/延迟与丢包率数值与柱条/资产总揽金额（`--accent`）/许可证徽章/spark 星光统一金色；黑金/白金两态的**进度条统一使用原版 premium 黑金渐变**（深金 `#8f651d` → 亮金 `#e5c367`，含二级详情页 .meter）；进度条轨道用详情页同款 `color-mix(border 70%)` 暗轨道（全主题自适应）；状态语义色保留（绿在线/红离线/黄到期），趋势图多线区分色保留
 - **液态玻璃主题**（第 4 主题）——渐变玻璃面 + 斜向镜面光泽 + 顶部镜面高光 + 4 层光斑背景，真液态玻璃而非毛玻璃
@@ -38,7 +96,7 @@
 **主控后台 → 主题设置 → 输入主题名**，全站访客实时跟随：
 
 | 主控输入 | 访客看到 |
-|---|---|
+| --- | --- |
 | `pixel` / `flat` / `anime` / `glass` / `lumina` / `premium` | 经典界面 + 对应主题 |
 | `lumina-gold` | Lumina 黑金配色（默认黑金，访客手动切换仍优先） |
 | `lumina-platinum` | Lumina 白金配色（米白底暗金，license premium light 移植） |
@@ -105,53 +163,6 @@ Worker 仅代理三个固定路径，不接受访客指定上游地址，因此�
 | `/api/series` | `/api/public/probe-series` | 延迟与丢包率历史 |
 | `/api/stream` | `/api/public/probe-ws` | 实时 WebSocket |
 
-## 准备工作
-
-- 已部署支持独立探针访问密钥的妙妙屋 X 主控
-- Cloudflare 账户及可用的 Workers 服务
-- Node.js 22 或更高版本、npm 10 或更高版本
-- 主控具有可由 Cloudflare 访问的 HTTPS 地址
-
-先进入主控的"系统设置 → 探针"，启用探针、选择展示服务器和指标，然后生成"独立探针访问密钥"。密钥明文只显示一次，请立即保存，切勿提交到 Git。
-
-## Cloudflare 网页部署（推荐）
-
-整个过程由 Cloudflare 从 GitHub 拉取、编译和部署，不需要在本地 clone，也不需要安装 Node.js：
-
-> **推荐先 fork 再导入**：先在 GitHub 上把 `chnnic/jiwo-probe` fork 到自己的账号，然后按下面的步骤导入**自己的 fork**。这样自带 `sync-upstream.yml` 自动同步工作流，上游更新无需手动合并（详见下文"自动同步上游更新"）。
-> ⚠️ **不要用页面上的 "Deploy with Workers" 一键部署按钮**（`deploy.workers.cloudflare.com`）：它会在你的 GitHub 生成一个**复制仓库**，且复制时跳过隐藏目录 `.github/`，导致自动同步工作流丢失，之后无法跟随上游更新。请使用 Dashboard 的 **Import a repository** 直接连接你的 fork。
-
-1. 在 GitHub 上 fork `chnnic/jiwo-probe`（页面右上角 **Fork** 按钮）。
-2. 在 Cloudflare Dashboard 的 **Workers & Pages → Create application → Import a repository**，选择**你 fork 出来的仓库**（而不是原仓库）。
-3. 保持以下构建设置：
-   - Production branch：`main`
-   - Build command：`npm run build`
-   - Deploy command：`./scripts/deploy.sh`
-   - Root directory：留空
-4. 首次部署后，进入 Worker 的 **Settings → Variables and Secrets**，添加运行时变量：
-
-   | 名称 | 类型 | 值 |
-   | --- | --- | --- |
-   | `MMWX_ORIGIN` | Text | 主控 HTTPS 地址，例如 `https://panel.example.com` |
-   | `PROBE_TOKEN` | Secret | 主控"系统设置 → 探针"生成的访问密钥 |
-
-   注意这里是 Worker 的运行时 **Variables and Secrets**，不是 **Build Variables and Secrets**。保存后点击 Deploy，使变量进入当前部署。
-5. 打开 Worker 地址，确认服务器列表、趋势图和实时更新正常。
-6. 最后回到主控，开启"仅允许独立探针访问"。此后直接访问主控的探针接口会返回 `404`。
-
-连接 GitHub 后，每次推送到 `main` 分支都会由 Workers Builds 自动构建和部署。
-
-### 自动同步上游更新
-
-fork 自带 `sync-upstream.yml` 工作流（纯 shell git 实现，零 action 依赖）：
-
-- **自动**：每天北京时间 11:23 自动合并 `chnnic/jiwo-probe` 的 `main` 到你的 fork 并推送，推送触发 CF 自动构建部署。
-- **手动**：fork 仓库 → **Actions → Sync upstream → Run workflow**（秒级同步）；或 GitHub 网页 **Sync fork → Update branch** 按钮。
-- **前提**（公共 fork 需检查一次）：
-  - **Actions 已启用**：fork 仓库 → Settings → Actions → General → 勾选 *Allow all actions and reusable workflows*（公共 fork 默认禁用定时任务）。
-  - **Workflow permissions = Read and write**：同上页面，*Workflow permissions* 选 *Read and write permissions*，否则工作流推送会被拒绝。
-  - 不要修改与上游冲突的文件；若有本地改动冲突，同步工作流会停止并列出冲突文件，需手动处理。
-
 ## Wrangler 命令行部署
 
 1. 克隆项目并安装依赖：
@@ -163,15 +174,15 @@ fork 自带 `sync-upstream.yml` 工作流（纯 shell git 实现，零 action �
    npx wrangler login
    ```
 
-3. 在 Cloudflare Dashboard 的 **Settings → Variables and Secrets** 添加文本变量 `MMWX_ORIGIN`。地址必须是固定的 HTTPS 源站，不要包含路径或结尾斜杠。
+2. 在 Cloudflare Dashboard 的 **Settings → Variables and Secrets** 添加文本变量 `MMWX_ORIGIN`。地址必须是固定的 HTTPS 源站，不要包含路径或结尾斜杠。
 
-4. 将主控生成的密钥保存为 Worker Secret：
+3. 将主控生成的密钥保存为 Worker Secret：
 
    ```bash
    npx wrangler secret put PROBE_TOKEN
    ```
 
-5. 构建并部署：
+4. 构建并部署：
 
    ```bash
    npm run deploy
@@ -231,6 +242,7 @@ npm run deploy     # 构建并部署到 Cloudflare Workers
 - 页面无实时更新：检查 Cloudflare 与源站反向代理是否允许 WebSocket；页面会自动使用 HTTP 轮询。
 - `MMWX_ORIGIN must use HTTPS`：生产源站不是 HTTPS。本地调试仅允许 `localhost` 或 `127.0.0.1`。
 - 页面没有服务器：在主控探针设置中选择需要展示的服务器。
+- 返回 404 通常表示外置探针未启用、未选择服务器或 PROBE_TOKEN 不一致；出现 MMWX_ORIGIN must use HTTPS 时，请检查主控地址是否为公网 HTTPS 地址。
 
 ## 上游同步
 
