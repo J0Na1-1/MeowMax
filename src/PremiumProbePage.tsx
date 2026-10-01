@@ -2241,9 +2241,9 @@ export function PremiumProbePage({
   // 配色模式: auto(北京时间白天白金/晚上黑金) ⇄ 白金 ⇄ 黑金 三态循环
   // 直接操作 html class(不动全局 DARK_OVERRIDE, 避免污染其他主题), localStorage 记忆
   const [colorMode, setColorMode] = useState<'auto' | 'platinum' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'auto'
+    if (typeof window === 'undefined') return 'dark'
     const saved = localStorage.getItem('premium-probe-color-mode')
-    return saved === 'platinum' || saved === 'dark' ? saved : 'auto'
+    return saved === 'platinum' || saved === 'dark' ? saved : 'dark'
   })
   // 用户手动点过按钮后, 主控下发不再驱动配色
   const manualColorRef = useRef(false)

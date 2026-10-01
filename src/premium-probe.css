@@ -3182,6 +3182,14 @@
   .premium-probe-license {
     display: none;
   }
+  /* 顶栏视图切换: 隐藏文字标签, 仅留图标 */
+  .premium-probe-view-toggle button {
+    font-size: 0;
+    padding: 0.42rem 0.5rem;
+  }
+  .premium-probe-view-toggle svg {
+    font-size: 0.9rem;
+  }
   /* 底部许可证: 单排横滚(替代三排换行) */
   .premium-probe-footer {
     flex-wrap: nowrap;
