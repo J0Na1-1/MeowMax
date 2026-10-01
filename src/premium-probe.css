@@ -3172,22 +3172,8 @@
 
 @media (max-width: 760px) {
   .premium-probe-topbar {
-    align-items: center;
-    min-height: 48px;
-    padding: 0.5rem 0.75rem;
-  }
-  .premium-probe-topbar h1 {
-    display: none;
-  }
-  .premium-probe-pro {
-    display: none;
-  }
-  .premium-probe-topbar img {
-    max-width: 80px;
-    height: 32px;
-  }
-  .premium-probe-topbar > div {
-    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.7rem 1rem;
   }
   .premium-probe-topbar nav {
     gap: 0.35rem;
