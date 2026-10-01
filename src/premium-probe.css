@@ -3177,6 +3177,15 @@
   }
   .premium-probe-topbar nav {
     gap: 0.35rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .premium-probe-topbar nav::-webkit-scrollbar {
+    display: none;
+  }
+  .premium-probe-topbar nav > * {
+    flex-shrink: 0;
   }
   .premium-probe-live,
   .premium-probe-license {
