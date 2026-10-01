@@ -2416,6 +2416,7 @@ export function PremiumProbePage({
             />
           )}
           <h1>{pageTitle}</h1>
+          <span className='premium-probe-pro desktop-pro'>PRO</span>
           {HEADER_LICENSE_BADGES.length > 0 ? (
             <span className='premium-probe-license'>
               <LicenseNameplate

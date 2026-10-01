@@ -129,6 +129,11 @@
   display: flex;
   align-items: center;
 }
+@media (min-width: 761px) {
+  .premium-probe-topbar-row-bottom .premium-probe-pro {
+    display: none;
+  }
+}
 
 .premium-probe-topbar img {
   width: auto;
@@ -3202,6 +3207,9 @@
   }
   .premium-probe-platinum-toggle,
   .premium-probe-theme-select {
+    display: none;
+  }
+  .desktop-pro {
     display: none;
   }
   .premium-probe-live,
