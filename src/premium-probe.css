@@ -2884,6 +2884,52 @@
   box-shadow: 0 0 6px rgba(216, 180, 106, 0.28);
 }
 
+.premium-probe-card-routes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid rgba(216, 180, 106, 0.12);
+}
+
+.premium-probe-card-route {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.18rem 0.5rem;
+  border: 1px solid rgba(216, 180, 106, 0.22);
+  border-radius: 0.25rem;
+  background: rgba(216, 180, 106, 0.06);
+  color: #d8b46a;
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+
+.premium-probe-card-route small {
+  color: #957f50;
+  font-size: 0.58rem;
+}
+
+.premium-probe-card-route strong {
+  color: #e8dfcc;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.premium-probe-card-route.premium {
+  background: rgba(216, 180, 106, 0.22);
+  border-color: rgba(242, 210, 139, 0.55);
+  color: #f2d28b;
+}
+
+.premium-probe-card-route.premium small {
+  color: #b5ad9a;
+}
+
+.premium-probe-card-route.premium strong {
+  color: #f2d28b;
+}
+
 .premium-probe-card-latency .premium-probe-interactive-chart {
   width: 100%;
   max-width: 100%;

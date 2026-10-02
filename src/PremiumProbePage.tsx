@@ -2013,6 +2013,22 @@ function PremiumServerCard({
           percent={disk}
         />
       </div>
+      {(server.return_routes || []).length > 0 && (
+        <div className='premium-probe-card-routes'>
+          {(server.return_routes || []).map((item, routeIndex) => {
+            const routeType = displayReturnRoute(item.route_type)
+            const normalized = routeType.toUpperCase().replace(/[^A-Z0-9]/g, '')
+            const isPremium = ['CN2GIA', 'CTGGIA', 'CN2', '9929', '10099', 'CMI2'].includes(normalized)
+            const carrierLabel = { telecom: '电信', unicom: '联通', mobile: '移动' }[item.carrier] || item.carrier
+            return (
+              <span key={`${item.carrier}-${routeIndex}`} className={isPremium ? 'premium-probe-card-route premium' : 'premium-probe-card-route'} title={routeType}>
+                <small>{carrierLabel}</small>
+                <strong>{routeType}</strong>
+              </span>
+            )
+          }}
+        </div>
+      )}
       <div className='premium-probe-server-footer'>
         <div className='premium-probe-card-traffic'>
           <span>周期流量</span>
