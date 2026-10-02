@@ -152,11 +152,11 @@
 
 .premium-probe-pro {
   display: inline-flex;
-  height: 2rem;
+  height: 1.125rem;
   align-items: center;
-  padding: 0 0.7rem;
+  padding: 0 0.5rem;
   color: var(--pp-gold-bright);
-  font-size: 0.82rem;
+  font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   border: 1px solid rgba(242, 210, 139, 0.68);
