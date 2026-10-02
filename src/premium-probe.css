@@ -3182,7 +3182,7 @@
 
 @media (max-width: 760px) {
   .premium-probe-topbar {
-    align-items: flex-start;
+    align-items: center;
     padding: 0.7rem 1rem;
   }
   .premium-probe-topbar nav {
